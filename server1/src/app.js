@@ -8,10 +8,39 @@ const userRoutes =require("./routes/userRoutes")
 const checkAdmin = require("./middleware/checkAdmin")
 const adminRouter = require("./routes/adminRoutes")
 const adminController = require("./controller/adminController")
+const loginRoutes = require("./routes/loginRoutes")
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
 
 
 //  first middleware
 app.use(globalMiddleware)
+app.use(express.json())
+app.use(cookieParser());
+
+
+
+
+
+
+
+// session created (session middleware)
+app.use(session({
+    secret:"abc123",
+    resave:false,
+    saveUninitialized:false,
+    // store:   if we use mongo db
+    cookie:{
+        httpOnly:true,
+        maxAge:60*1000,
+        sameSite:"lax",
+        path:"/",
+        // domain:"localhost"
+        priority:"high",
+        secure:false
+    }
+}))
+
 
 app.get("/",(req, res , next)=>{
     res.send("hello from home")
@@ -30,7 +59,8 @@ app.use("/user/u1",userRoutes);
 app.use("/admin/a1" , checkAdmin)
 app.use("/admin/a1" , adminRouter , adminController)
 
-
+// login Routes
+app.use("/emp",loginRoutes)
 
 
 

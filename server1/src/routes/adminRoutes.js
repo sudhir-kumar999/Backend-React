@@ -5,7 +5,8 @@ router.get("/ad/dashboard",(req,res)=>{
     res.send("admin dashboard")
 })
 router.get("/ad/profile",(req,res, next)=>{
-    // res.send("admin Profile page")
+    // res.send("ad
+    // min Profile page")
     next();
 })
 router.get("/ad/setting",(req,res)=>{
