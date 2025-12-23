@@ -5,6 +5,10 @@ const userValidate = require("../utils/userValidate");
 const isAuth = require("../middleware/isAuth");
 const User = require("../models/userModels");
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+const secret_key = "superman"
+const checkLogin=require("../middleware/checkLogin")
+
 router.get("/auth", (req, res) => {
   res.send("Login require");
 });
@@ -57,7 +61,9 @@ router.post("/login", async(req, res) => {
   // const user = details.find(
   //   (ele) => ele.email == email && ele.password == password
   // );
-  console.log(user)
+  // console.log(user)
+  // console.log(password)
+  // console.log(user.password)
   if (!user) {
     //  this is the type of persistent cookie bcz it contain their expiry time and it is stored in hard disk/ssd
     // res.cookie("token", "secret1234",
@@ -75,24 +81,38 @@ router.post("/login", async(req, res) => {
     // })
     return res.send("invalid details");
   } 
+  //!  compare password
+  const isValidPass =await bcrypt.compare(password , user.password)
 
- return res.send("success login ")
+  if(!isValidPass){
+    return res.send("invalid password")
+  }else{
+    const payload = {
+  userId: user._id,
+  email: user.email
+};
+    const jwtToken = jwt.sign(payload , secret_key , {expiresIn:"1m"})
+    res.cookie("token" ,jwtToken,{httpOnly:true})
+     return res.send("success login ")
+  }
+
+
 
 });
 
 //  middleware to check log in details
-const checkLogin = (req, res, next) => {
-  const { token } = req.cookies;
-  console.log(token);
+// const checkLogin = (req, res, next) => {
+//   const { token } = req.cookies;
+//   console.log(token);
 
-  if (token === "secret1234") {
-    next();
-  } else {
-    res.send("login first");
-  }
-};
+//   if (token === "secret1234") {
+//     next();
+//   } else {
+//     res.send("login first");
+//   }
+// };
 
-router.get("/profile", isAuth, (req, res) => {
+router.get("/profile", checkLogin, (req, res) => {
   res.send("profile page");
 });
 module.exports = router;

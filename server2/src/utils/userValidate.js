@@ -1,7 +1,7 @@
-const validate = require("validator")
+// const validate = require("validator")
+import validate from "validator"
 
-
-const userValidate =(name ,email , password)=>{
+const userValidate =(name ,age,email , password)=>{
     if(!name || !email || !password){
         return false;
     }
@@ -25,4 +25,4 @@ const userValidate =(name ,email , password)=>{
 
 }
 
-module.exports=userValidate
+export default userValidate;
