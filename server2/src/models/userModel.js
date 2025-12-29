@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+// import { trim } from "validator";
 
 const userSchema= new mongoose.Schema({
     name:{
@@ -15,13 +16,27 @@ const userSchema= new mongoose.Schema({
         type:String,
         require:true,
         lowercase:true,
-        unique:true
+        unique:true,
+        trim:true,
     },
     password:{
         type:String,
         require:true,
 
-    }
+    },
+
+    //  new field added for nodemailer
+    emailVerified:{
+        type:Boolean,
+        default:false
+    },
+    verificationToken:{
+        type:String
+    },
+    verificationTokenExpires:{
+        type:Date
+    },
+    
 
 })
 

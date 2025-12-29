@@ -6,16 +6,15 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import checkLogin from "../middleware/checklogin.js";
-import crypto from "crypto";
-import { emailSendCode } from "../models/email_service.js";
 import {
   generateAccessToken,
   refreshAccessToken,
   verifyRefreshToken,
 } from "../utils/token.js";
+import { emailSendCode } from "../models/email_service.js";
 dotenv.config();
 
-export const registerUser = async (req, res) => {
+export const signin = async (req, res) => {
   const { name, age, email, password } = req.body;
   const isValidate = userValidate(name, age, email, password);
   if (!isValidate) {
@@ -24,10 +23,8 @@ export const registerUser = async (req, res) => {
 
   const isExistUser = await Student.findOne({ email: email });
   if (isExistUser) {
-    return res.send("user already exist");
+    res.send("user already exist");
   }
-  const token = await crypto.randomBytes(32).toString("hex");
-  console.log("crypto token ", token);
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = new Student({
@@ -35,43 +32,14 @@ export const registerUser = async (req, res) => {
     age,
     email,
     password: hashedPassword,
-    verificationToken: token,
-    verificationTokenExpires: Date.now() + 10 * 60 * 1000,
   });
   await user.save();
-  console.log(email)
-  const link = `http://localhost:5001/user/v1/verify-email/${token}`;
-  const htmlTemplate = `<h2>Email verification link</h2>
-                        <p>click this email to verify your mail expires in 10 min</p>
-                        <a href=${link}>${link}</a>`;
-  await emailSendCode(email, "Email verification link", htmlTemplate);
-  return res.send("verification link sent to your registered email id");
-};
-
-export const verifyEmail = async (req, res) => {
-  try {
-    const user = await Student.findOne({
-      verificationToken: req.params?.token,
-      verificationTokenExpires: { $gt: Date.now() },
-    });
-    console.log(user)
-
-    if (!user) {
-      return res.send(
-        "Invalid user or email verification link expires or invalid token"
-      );
-    }
-
-    (user.emailVerified = true),
-      (user.verificationToken = undefined),
-      (user.verificationTokenExpires = undefined);
-    await user.save();
-
-    
-    return res.send("your email is verified successfully");
-  } catch (error) {
-    res.send("error at verify email", error);
-  }
+  // const link =`http://localhost:5001/verify-email/${token}`
+  // const htmlTemplate=`<h2>Email verification link</h2>
+  //                     <p>click this email to verify your mail expires in 10 min</p>
+  //                     <a href=${link}>${link}</a>`
+  // await emailSendCode(email , "Email verification link",htmlTemplate)
+  // return res.send("verification link sent to your registered email id");
 };
 
 export const loginUser = async (req, res) => {
@@ -131,12 +99,12 @@ export const getNewAccessToken = async (req, res) => {
   }
   // const newAccessToken = generateAccessToken(payload.userId, process.env.SECRET_KEY);
   const newAccessToken = generateAccessToken(
-    {
-      emailId: user.email,
-      user_id: user._id,
-    },
-    process.env.SECRET_KEY
-  );
+  {
+    emailId: user.email,
+    user_id: user._id,
+  },
+  process.env.SECRET_KEY
+);
   // const refreshToken = generateAccessToken(user, process.env.REFRESH_KEY);
   console.log("new token", newAccessToken);
   res.cookie("token", newAccessToken);

@@ -4,9 +4,9 @@ import { verifyAccessToken } from "../utils/token.js";
 dotenv.config();
 const checkLogin = (req, res, next) => {
   try {
-    const token =
-      req.cookies.token || req.headers["authorization"].split("")[0];
-    console.log(token);
+    const token = req.cookies.token;
+    // || req.headers["authorization"].split("")[0];
+    // console.log(token);
     if (!token) {
       return res.send("log in first");
     }
@@ -15,10 +15,10 @@ const checkLogin = (req, res, next) => {
 
     const decoded = verifyAccessToken(token, process.env.SECRET_KEY);
     req.user = decoded;
-    console.log(decoded)
+    console.log("decoded",decoded);
 
     // next middleware / controller
-    next();
+    return next();
   } catch (error) {
     console.log("check login error", error);
   }
